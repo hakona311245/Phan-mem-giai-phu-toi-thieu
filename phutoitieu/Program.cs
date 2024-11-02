@@ -11,7 +11,7 @@ namespace TimKhoa
 
     class C_ThuatToan
     {
-        // Add your previous methods here (TimBaoDong, SoSanhChuoi, TimKhoa, TimTapCon, TimPhuToiThieu, etc.)
+        
         public string TimBaoDong(string baoDong, List<string> trai, List<string> phai)
         {
             int doDaiBaoDong = baoDong.Length - 1;
@@ -35,12 +35,6 @@ namespace TimKhoa
             return baoDong;
         }
 
-        /// <summary>
-        /// So sánh chuỗi A có nằm trong chuỗi B không
-        /// </summary>
-        /// <param name="con">A</param>
-        /// <param name="cha">B</param>
-        /// <returns>true nếu nằm trong, ngược lại trả về false</returns>
         private bool SoSanhChuoi(string con, string cha)
         {
             int ChuoiCon = 0;
@@ -64,13 +58,6 @@ namespace TimKhoa
             return false;
         }
 
-        /// <summary>
-        /// tìm tất cả các khóa của lược đồ
-        /// </summary>
-        /// <param name="tapThuocTinh">tập thuộc tính của lược đồ</param>
-        /// <param name="trai">danh sách phụ thuộc hàm bên trái</param>
-        /// <param name="phai">danh sách phụ thuộc hàm bên phải</param>
-        /// <returns>trả về danh sách các khóa</returns>
 
         public S_PhuToiThieu TimPhuToiThieu(List<string> trai, List<string> phai)
         {
@@ -170,7 +157,6 @@ namespace TimKhoa
             return ptt;
         }
 
-        // Cut character helper method
         public string CatKiTu(string str, int vitri)
         {
             string ok = "";
@@ -191,9 +177,7 @@ namespace TimKhoa
             List<string> trai = new List<string>();
             List<string> phai = new List<string>();
 
-            // Input attributes and functional dependencies
-            Console.WriteLine("Nhap tap thuoc tinh (VD: ABCD):");
-            string tapThuocTinh = Console.ReadLine();
+
 
             Console.WriteLine("So luong phu thuoc ham:");
             int soPhuThuocHam = int.Parse(Console.ReadLine());
@@ -209,10 +193,8 @@ namespace TimKhoa
                 phai.Add(phaiPhuThuoc);
             }
 
-            // Calculating minimal cover
             S_PhuToiThieu phuToiThieu = thuatToan.TimPhuToiThieu(trai, phai);
 
-            // Displaying the minimal cover
             Console.WriteLine("\nPhu toi tieu la:");
             for (int i = 0; i < phuToiThieu.trai.Count; i++)
             {
