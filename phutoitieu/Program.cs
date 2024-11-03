@@ -11,7 +11,6 @@ namespace TimKhoa
 
     class C_ThuatToan
     {
-        
         public string TimBaoDong(string baoDong, List<string> trai, List<string> phai)
         {
             int doDaiBaoDong = baoDong.Length - 1;
@@ -25,11 +24,15 @@ namespace TimKhoa
                     if (SoSanhChuoi(trai[i], baoDong))
                     {
                         for (int j = 0; j < phai[i].Length; j++)
+                        {
+                            // Kiểm tra xem thuộc tính của vế phải đã có trong bao đóng hay chưa
                             if (!SoSanhChuoi(phai[i][j].ToString(), baoDong))
+                            {
                                 baoDong += phai[i][j].ToString();
+                            }
+                        }
                     }
                 }
-
             }
 
             return baoDong;
@@ -52,19 +55,15 @@ namespace TimKhoa
                     }
                 }
 
-            if (ChuoiCon == con.Length)
-                return true;
-
-            return false;
+            return ChuoiCon == con.Length;
         }
-
 
         public S_PhuToiThieu TimPhuToiThieu(List<string> trai, List<string> phai)
         {
             S_PhuToiThieu ptt = new S_PhuToiThieu();
 
             int n = phai.Count;
-            //tách phụ thuộc hàm vế phải có hơn 1 thuộc tính
+            // Tách phụ thuộc hàm vế phải có hơn 1 thuộc tính
             for (int i = 0; i < n; i++)
             {
                 if (phai[i].Length > 1)
@@ -85,12 +84,11 @@ namespace TimKhoa
                 }
             }
 
-            //loại bỏ thuộc tính dư thừa bên vế trái có hơn 1 thuộc tính
+            // Loại bỏ thuộc tính dư thừa bên vế trái có hơn 1 thuộc tính
             for (int i = 0; i < trai.Count; i++)
             {
                 if (trai[i].Length > 1)
                 {
-
                     for (int j = 0; j < trai[i].Length; j++)
                     {
                         if (trai[i].Length > 1)
@@ -103,13 +101,12 @@ namespace TimKhoa
                                 trai[i] = temp;
                                 j--;
                             }
-
                         }
                     }
                 }
             }
 
-            //loại bỏ thuộc tính dư thừa
+            // Loại bỏ thuộc tính dư thừa
             List<string> TempTrai = new List<string>();
             List<string> TempPhai = new List<string>();
 
@@ -121,7 +118,6 @@ namespace TimKhoa
 
             for (int i = 0; i < trai.Count; i++)
             {
-
                 TempTrai.RemoveAt(i);
                 TempPhai.RemoveAt(i);
 
@@ -167,6 +163,64 @@ namespace TimKhoa
             }
             return ok;
         }
+
+        public List<string> TimTapCon(string tap)
+        {
+            List<string> tapCon = new List<string>();
+            int n = tap.Length;
+
+            // Generate all subsets of the given set
+            for (int i = 0; i < (1 << n); i++)
+            {
+                string subset = "";
+                for (int j = 0; j < n; j++)
+                {
+                    if ((i & (1 << j)) > 0)
+                        subset += tap[j];
+                }
+                if (!string.IsNullOrEmpty(subset))
+                    tapCon.Add(subset);
+            }
+
+            return tapCon;
+        }
+
+        public List<string> TimKhoa(string tapThuocTinh, List<string> trai, List<string> phai)
+        {
+            List<string> listKhoa = new List<string>();
+            List<string> tapCon = TimTapCon(tapThuocTinh);
+
+            foreach (string subset in tapCon)
+            {
+                // Calculate the closure of the subset
+                string baoDong = TimBaoDong(subset, trai, phai);
+
+                // If the closure of the subset contains all attributes, it is a superkey
+                if (SoSanhChuoi(tapThuocTinh, baoDong))
+                {
+                    bool isMinimal = true;
+                    // Check if there is a smaller subset that is also a superkey
+                    foreach (string smallerSubset in TimTapCon(subset))
+                    {
+                        if (smallerSubset.Length < subset.Length &&
+                            SoSanhChuoi(tapThuocTinh, TimBaoDong(smallerSubset, trai, phai)))
+                        {
+                            isMinimal = false;
+                            break;
+                        }
+                    }
+
+                    // If no smaller subset is a superkey, it is a candidate key
+                    if (isMinimal)
+                    {
+                        listKhoa.Add(subset);
+                    }
+                }
+            }
+
+            return listKhoa;
+        }
+
     }
 
     class Program
@@ -177,20 +231,50 @@ namespace TimKhoa
             List<string> trai = new List<string>();
             List<string> phai = new List<string>();
 
-
+            Console.WriteLine("Nhap tap thuoc tinh (VD: ABCD):");
+            string tapThuocTinh = Console.ReadLine();
 
             Console.WriteLine("So luong phu thuoc ham:");
             int soPhuThuocHam = int.Parse(Console.ReadLine());
 
             for (int i = 0; i < soPhuThuocHam; i++)
             {
-                Console.WriteLine($"Nhap ve trai cua phu thuoc ham {i + 1} (VD: A):");
-                string traiPhuThuoc = Console.ReadLine();
-                Console.WriteLine($"Nhap ve phai cua phu thuoc ham {i + 1} (VD BC):");
-                string phaiPhuThuoc = Console.ReadLine();
+                Console.WriteLine($"Nhap phu thuoc ham {i + 1} (VD: A->BC):");
+                string phuThuoc = Console.ReadLine();
 
-                trai.Add(traiPhuThuoc);
-                phai.Add(phaiPhuThuoc);
+
+                string veTrai = "";
+                string vePhai = "";
+
+                bool isVeTrai = true;  // kiểm tra có  ở vế trái không
+
+                // Duyệt từng ký tự trong phụ thuộc hàm
+                for (int j = 0; j < phuThuoc.Length; j++)
+                {
+                    if (j < phuThuoc.Length - 1 && phuThuoc[j] == '-' && phuThuoc[j + 1] == '>')
+                    {
+                        isVeTrai = false; 
+                        j++; 
+                    }
+                    else
+                    {
+                        if (isVeTrai) //nếu cờ là đúng thì add kí tự đang xem vào mảng vế trái
+                            veTrai += phuThuoc[j];
+                        else    // còn không thì add vô vế phải
+                            vePhai += phuThuoc[j];
+                    }
+                }
+
+                if (veTrai == "" || vePhai == "")
+                {
+                    Console.WriteLine("Phu thuoc ham khong hop le. Vui long nhap lai.");
+                    i--; 
+                }
+                else
+                {
+                    trai.Add(veTrai);
+                    phai.Add(vePhai);
+                }
             }
 
             S_PhuToiThieu phuToiThieu = thuatToan.TimPhuToiThieu(trai, phai);
@@ -199,6 +283,13 @@ namespace TimKhoa
             for (int i = 0; i < phuToiThieu.trai.Count; i++)
             {
                 Console.WriteLine($"{phuToiThieu.trai[i]} -> {phuToiThieu.phai[i]}");
+            }
+
+            List<string> khoaUngVien = thuatToan.TimKhoa(tapThuocTinh, phuToiThieu.trai, phuToiThieu.phai);
+            Console.WriteLine("\nCac khoa ung vien la:");
+            foreach (string khoa in khoaUngVien)
+            {
+                Console.WriteLine(khoa);
             }
 
             Console.WriteLine("Press any key to exit...");
